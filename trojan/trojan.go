@@ -61,3 +61,12 @@ func (trojan *Trojan) Configure(config string) error {
 	err := os.WriteFile("server.json", []byte(config), 0644)
 	return err
 }
+
+func (trojan *Trojan) GetConfig() string {
+	// Read config from server.json
+	config, err := os.ReadFile("server.json")
+	if err != nil {
+		return ""
+	}
+	return string(config)
+}

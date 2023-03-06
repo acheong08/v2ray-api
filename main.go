@@ -85,6 +85,18 @@ func main() {
 		c.JSON(200, gin.H{"message": "configured"})
 	})
 
+	server.GET("/admin/config", admin_auth, func(c *gin.Context) {
+		config := tr.GetConfig()
+		// Convert config to JSON object
+		var json_config interface{}
+		err := json.Unmarshal([]byte(config), &json_config)
+		if err != nil {
+			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
+			return
+		}
+		c.JSON(200, json_config)
+	})
+
 	// Run
 	server.Run(":8080")
 
