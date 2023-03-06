@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 
 	"github.com/acheong08/v2ray-api/trojan"
@@ -67,19 +68,21 @@ func main() {
 		c.JSON(200, gin.H{"status": tr.Status()})
 	})
 
-	server.GET("/admin/files", admin_auth, func(c *gin.Context) {
-		// List files in current directory
-		files, err := os.ReadDir(".")
+	server.POST("/admin/configure", admin_auth, func(c *gin.Context) {
+		var config interface{}
+		c.BindJSON(&config)
+		// Convert config to JSON string
+		json_config, err := json.Marshal(config)
 		if err != nil {
 			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
 			return
 		}
-		// Create a slice of filenames
-		var filenames []string
-		for _, file := range files {
-			filenames = append(filenames, file.Name())
+		err = tr.Configure(string(json_config))
+		if err != nil {
+			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
+			return
 		}
-		c.JSON(200, gin.H{"files": filenames})
+		c.JSON(200, gin.H{"message": "configured"})
 	})
 
 	// Run

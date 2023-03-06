@@ -2,6 +2,7 @@ package trojan
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -53,4 +54,10 @@ func (trojan *Trojan) Status() string {
 	} else {
 		return "running"
 	}
+}
+
+func (trojan *Trojan) Configure(config string) error {
+	// Write config to server.json
+	err := os.WriteFile("server.json", []byte(config), 0644)
+	return err
 }
