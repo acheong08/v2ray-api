@@ -56,6 +56,7 @@ func restart(c *gin.Context) {
 		c.JSON(500, gin.H{"message": "Internal server error", "error": err.Error()})
 		return
 	}
+	c.JSON(200, gin.H{"message": "Restarted"})
 }
 
 func stop(c *gin.Context) {
