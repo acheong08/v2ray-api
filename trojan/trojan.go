@@ -1,18 +1,42 @@
 package trojan
 
 import (
-	"v2ray.com/core/common"
-	"v2ray.com/core/infra/conf/serial"
+	"encoding/json"
+	"io"
+	"strings"
 
-	v2ray "v2ray.com/core"
+	"github.com/v2fly/v2ray-core/v5/common"
+
+	v2ray "github.com/v2fly/v2ray-core/v5"
 )
 
 func init() {
 	// Register JSON loader
 	common.Must(v2ray.RegisterConfigLoader(&v2ray.ConfigFormat{
-		Name:      "JSON",
+		Name:      []string{"json"},
 		Extension: []string{"json"},
-		Loader:    serial.LoadJSONConfig,
+		Loader: func(input interface{}) (*v2ray.Config, error) {
+			config := new(v2ray.Config)
+			switch v := input.(type) {
+			case string:
+				err := json.Unmarshal([]byte(v), config)
+				if err != nil {
+					return nil, err
+				}
+				return config, nil
+			case []byte:
+				err := json.Unmarshal(v, config)
+				if err != nil {
+					return nil, err
+				}
+			case io.Reader:
+				err := json.NewDecoder(v).Decode(config)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return config, nil
+		},
 	}))
 }
 
@@ -22,7 +46,7 @@ type Trojan struct {
 
 func (trojan *Trojan) Create(raw_config string) error {
 	// Create io.Reader from raw_config
-	config, err := v2ray.LoadConfig("json", raw_config, nil)
+	config, err := v2ray.LoadConfig("json", strings.NewReader(raw_config))
 	if err != nil {
 		return err
 	}

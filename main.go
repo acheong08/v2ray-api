@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/acheong08/v2ray-api/trojan"
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +31,8 @@ func main() {
 }
 
 type Config struct {
-	Filepath string `json:"filepath"`
+	Inbounds  []interface{} `json:"inbounds"`
+	Outbounds []interface{} `json:"outbounds"`
 }
 
 // Handlers
@@ -41,11 +44,12 @@ func restart(c *gin.Context) {
 		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
+	config_string, _ := json.Marshal(config)
 	// Create trojan server
 	if trojan_server.Status() == "exists" {
-		err = trojan_server.RestartWithNewConfig(string(config.Filepath))
+		err = trojan_server.RestartWithNewConfig(string(config_string))
 	} else {
-		err = trojan_server.CreateAndRun(string(config.Filepath))
+		err = trojan_server.CreateAndRun(string(config_string))
 
 	}
 	if err != nil {
