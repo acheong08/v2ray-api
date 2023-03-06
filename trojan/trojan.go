@@ -10,7 +10,7 @@ type Trojan struct {
 }
 
 func (trojan *Trojan) Start() error {
-	cmd := exec.Command("./v2ray", "run", "-c", "server.json")
+	cmd := exec.Command("/v2ray", "run", "-c", "server.json")
 	err := cmd.Start()
 	if err != nil {
 		return err
