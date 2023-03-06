@@ -67,6 +67,21 @@ func main() {
 		c.JSON(200, gin.H{"status": tr.Status()})
 	})
 
+	server.GET("/admin/files", admin_auth, func(c *gin.Context) {
+		// List files in current directory
+		files, err := os.ReadDir(".")
+		if err != nil {
+			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
+			return
+		}
+		// Create a slice of filenames
+		var filenames []string
+		for _, file := range files {
+			filenames = append(filenames, file.Name())
+		}
+		c.JSON(200, gin.H{"files": filenames})
+	})
+
 	// Run
 	server.Run(":8080")
 
