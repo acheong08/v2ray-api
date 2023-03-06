@@ -38,6 +38,15 @@ func main() {
 		c.JSON(200, gin.H{"message": "stopped"})
 	})
 
+	server.POST("/admin/restart", admin_auth, func(c *gin.Context) {
+		tr.Restart()
+		c.JSON(200, gin.H{"message": "restarted"})
+	})
+
+	server.GET("/admin/status", admin_auth, func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": tr.Status()})
+	})
+
 	// Run
 	server.Run(":8080")
 

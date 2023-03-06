@@ -20,3 +20,19 @@ func (trojan *Trojan) Stop() {
 	cmd := exec.Command("kill", "-9", fmt.Sprint(trojan.pid))
 	cmd.Start()
 }
+
+func (trojan *Trojan) Restart() {
+	trojan.Stop()
+	trojan.Start()
+}
+
+func (trojan *Trojan) Status() string {
+	// Check if PID is running
+	cmd := exec.Command("ps", "-p", fmt.Sprint(trojan.pid))
+	err := cmd.Run()
+	if err != nil {
+		return "stopped"
+	} else {
+		return "running"
+	}
+}
