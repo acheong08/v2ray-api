@@ -4,18 +4,9 @@
       "port": 10101,
       "protocol": "trojan",
       "settings": {
-        "clients": [
-          {
-            "email": "example@example.com",
-            "password": "example"
-          }
-        ]
+        "clients": [{ "email": "example@example.com", "password": "example" }]
       }
     }
   ],
-  "outbounds": [
-    {
-      "protocol": "freedom"
-    }
-  ]
+  "outbounds": [{ "protocol": "freedom" }]
 }
