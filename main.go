@@ -33,7 +33,12 @@ func main() {
 			c.JSON(200, gin.H{"message": "already running"})
 			return
 		}
-		c.JSON(200, gin.H{"message": "started", "error": tr.Start().Error()})
+		err := tr.Start()
+		if err != nil {
+			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{"message": "started"})
 	})
 
 	server.POST("/admin/stop", admin_auth, func(c *gin.Context) {
@@ -41,11 +46,20 @@ func main() {
 			c.JSON(200, gin.H{"message": "already stopped"})
 			return
 		}
-		c.JSON(200, gin.H{"message": "stopped", "error": tr.Stop().Error()})
+		err := tr.Stop()
+		if err != nil {
+			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{"message": "stopped"})
 	})
 
 	server.POST("/admin/restart", admin_auth, func(c *gin.Context) {
-		tr.Restart()
+		err := tr.Restart()
+		if err != nil {
+			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
+			return
+		}
 		c.JSON(200, gin.H{"message": "restarted"})
 	})
 
