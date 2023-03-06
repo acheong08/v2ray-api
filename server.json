@@ -1,7 +1,7 @@
 {
   "inbounds": [
     {
-      "port": 10086,
+      "port": 10101,
       "protocol": "trojan",
       "settings": {
         "clients": [
