@@ -29,13 +29,19 @@ func main() {
 	})
 
 	server.POST("/admin/start", admin_auth, func(c *gin.Context) {
-		tr.Start()
-		c.JSON(200, gin.H{"message": "started"})
+		if tr.Status() == "running" {
+			c.JSON(200, gin.H{"message": "already running"})
+			return
+		}
+		c.JSON(200, gin.H{"message": "started", "error": tr.Start().Error()})
 	})
 
 	server.POST("/admin/stop", admin_auth, func(c *gin.Context) {
-		tr.Stop()
-		c.JSON(200, gin.H{"message": "stopped"})
+		if tr.Status() == "stopped" {
+			c.JSON(200, gin.H{"message": "already stopped"})
+			return
+		}
+		c.JSON(200, gin.H{"message": "stopped", "error": tr.Stop().Error()})
 	})
 
 	server.POST("/admin/restart", admin_auth, func(c *gin.Context) {

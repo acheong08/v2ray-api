@@ -9,21 +9,34 @@ type Trojan struct {
 	pid int
 }
 
-func (trojan *Trojan) Start() {
+func (trojan *Trojan) Start() error {
 	cmd := exec.Command("v2ray", "run", "-c", "server.json")
-	cmd.Start()
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
 	// Get the PID
 	trojan.pid = cmd.Process.Pid
+	return nil
 }
 
-func (trojan *Trojan) Stop() {
+func (trojan *Trojan) Stop() error {
 	cmd := exec.Command("kill", "-9", fmt.Sprint(trojan.pid))
-	cmd.Start()
+	err := cmd.Start()
+	return err
 }
 
-func (trojan *Trojan) Restart() {
-	trojan.Stop()
+func (trojan *Trojan) Restart() error {
+	if trojan.Status() == "stopped" {
+		trojan.Start()
+		return nil
+	}
+	err := trojan.Stop()
+	if err != nil {
+		return err
+	}
 	trojan.Start()
+	return err
 }
 
 func (trojan *Trojan) Status() string {
