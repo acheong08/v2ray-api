@@ -28,23 +28,28 @@ func main() {
 
 }
 
+type Config struct {
+	Filepath string `json:"filepath"`
+}
+
 // Handlers
 func restart(c *gin.Context) {
-	// Get JSON body as string
-	config, err := c.GetRawData()
+	// Get JSON config
+	var config Config
+	err := c.BindJSON(&config)
 	if err != nil {
 		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
 	// Create trojan server
 	if trojan_server.Status() == "exists" {
-		err = trojan_server.RestartWithNewConfig(string(config))
+		err = trojan_server.RestartWithNewConfig(string(config.Filepath))
 	} else {
-		err = trojan_server.CreateAndRun(string(config))
+		err = trojan_server.CreateAndRun(string(config.Filepath))
 
 	}
 	if err != nil {
-		c.JSON(500, gin.H{"message": "Internal server error"})
+		c.JSON(500, gin.H{"message": "Internal server error", "error": err.Error()})
 		return
 	}
 }

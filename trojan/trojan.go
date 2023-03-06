@@ -1,15 +1,28 @@
 package trojan
 
 import (
-	v2ray "github.com/v2fly/v2ray-core/v5"
+	"v2ray.com/core/common"
+	"v2ray.com/core/infra/conf/serial"
+
+	v2ray "v2ray.com/core"
 )
+
+func init() {
+	// Register JSON loader
+	common.Must(v2ray.RegisterConfigLoader(&v2ray.ConfigFormat{
+		Name:      "JSON",
+		Extension: []string{"json"},
+		Loader:    serial.LoadJSONConfig,
+	}))
+}
 
 type Trojan struct {
 	instance *v2ray.Instance
 }
 
 func (trojan *Trojan) Create(raw_config string) error {
-	config, err := v2ray.LoadConfig("json", raw_config)
+	// Create io.Reader from raw_config
+	config, err := v2ray.LoadConfig("json", raw_config, nil)
 	if err != nil {
 		return err
 	}
@@ -21,16 +34,15 @@ func (trojan *Trojan) Create(raw_config string) error {
 }
 
 func (trojan *Trojan) CreateAndRun(raw_config string) error {
-	config, err := v2ray.LoadConfig("json", raw_config)
-	if err != nil {
-		return err
-	}
-	trojan.instance, err = v2ray.New(config)
+	err := trojan.Create(raw_config)
 	if err != nil {
 		return err
 	}
 	err = trojan.Start()
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (trojan *Trojan) Start() error {

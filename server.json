@@ -1,0 +1,21 @@
+{
+  "inbounds": [
+    {
+      "port": 10086,
+      "protocol": "trojan",
+      "settings": {
+        "clients": [
+          {
+            "email": "example@example.com",
+            "password": "example"
+          }
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom"
+    }
+  ]
+}
