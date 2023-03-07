@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/acheong08/v2ray-api/trojan"
 	"github.com/gin-gonic/gin"
@@ -21,7 +22,41 @@ func authMiddleware(expectedToken string) gin.HandlerFunc {
 }
 
 func main() {
+	var port int
+	var err error
+	// Read env for PORT
+	port_env := os.Getenv("PORT")
+	if port_env == "" {
+		port = 10101
+	} else {
+		port, err = strconv.Atoi(port_env)
+		if err != nil {
+			panic(err)
+		}
+	}
+	// Read server.json
+	config, err := os.ReadFile("server.json")
+	if err != nil {
+		panic(err)
+	}
+	// Set config port to env port
+	var configMap map[string]interface{}
+	if err := json.Unmarshal(config, &configMap); err != nil {
+		panic(err)
+	}
+	// Set port at ["inbounds"][0]["port"]
+	configMap["inbounds"].([]interface{})[0].(map[string]interface{})["port"] = port
+	// Set fallback port at ["inbounds"][0]["settings"]["fallbacks"][0]["port"]
+	configMap["inbounds"].([]interface{})[0].(map[string]interface{})["settings"].(map[string]interface{})["fallbacks"].([]interface{})[0].(map[string]interface{})["dest"] = port + 1
+	// Marshal configMap back to config
+	if config, err = json.Marshal(configMap); err != nil {
+		panic(err)
+	}
 	tr := trojan.Trojan{}
+	// Configure
+	if err := tr.Configure(string(config)); err != nil {
+		panic(err)
+	}
 	// Start by default
 	if err := tr.Start(); err != nil {
 		panic(err)
@@ -112,5 +147,5 @@ func main() {
 		})
 	}
 	// Run
-	router.Run()
+	router.Run(":" + strconv.Itoa(port+1))
 }
