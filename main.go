@@ -2,102 +2,106 @@ package main
 
 import (
 	"encoding/json"
+	"net/http"
 	"os"
 
 	"github.com/acheong08/v2ray-api/trojan"
 	"github.com/gin-gonic/gin"
 )
 
-func admin_auth(c *gin.Context) {
-	// Get Authorization header
-	auth_header := c.GetHeader("Authorization")
-	// Check if the header matches env variable
-	if auth_header == os.Getenv("ADMIN_AUTH") {
+func authMiddleware(expectedToken string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		actualToken := c.GetHeader("Authorization")
+		if actualToken != expectedToken {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 		c.Next()
-	} else {
-		c.AbortWithStatus(401)
 	}
 }
 
 func main() {
-
 	tr := trojan.Trojan{}
+	router := gin.Default()
 
-	server := gin.Default()
-
-	server.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "pong"})
+	// Ping route
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
 
-	server.POST("/admin/start", admin_auth, func(c *gin.Context) {
-		if tr.Status() == "running" {
-			c.JSON(200, gin.H{"message": "already running"})
-			return
-		}
-		err := tr.Start()
-		if err != nil {
-			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
-			return
-		}
-		c.JSON(200, gin.H{"message": "started"})
-	})
+	// Admin routes
+	adminGroup := router.Group("/admin")
+	adminGroup.Use(authMiddleware(os.Getenv("ADMIN_AUTH")))
+	{
+		// Start route
+		adminGroup.POST("/start", func(c *gin.Context) {
+			if tr.Status() == "running" {
+				c.JSON(http.StatusOK, gin.H{"message": "already running"})
+				return
+			}
+			if err := tr.Start(); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "started"})
+		})
 
-	server.POST("/admin/stop", admin_auth, func(c *gin.Context) {
-		if tr.Status() == "stopped" {
-			c.JSON(200, gin.H{"message": "already stopped"})
-			return
-		}
-		err := tr.Stop()
-		if err != nil {
-			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
-			return
-		}
-		c.JSON(200, gin.H{"message": "stopped"})
-	})
+		// Stop route
+		adminGroup.POST("/stop", func(c *gin.Context) {
+			if tr.Status() == "stopped" {
+				c.JSON(http.StatusOK, gin.H{"message": "already stopped"})
+				return
+			}
+			if err := tr.Stop(); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "stopped"})
+		})
 
-	server.POST("/admin/restart", admin_auth, func(c *gin.Context) {
-		err := tr.Restart()
-		if err != nil {
-			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
-			return
-		}
-		c.JSON(200, gin.H{"message": "restarted"})
-	})
+		// Restart route
+		adminGroup.POST("/restart", func(c *gin.Context) {
+			if err := tr.Restart(); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "restarted"})
+		})
 
-	server.GET("/admin/status", admin_auth, func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": tr.Status()})
-	})
+		// Status route
+		adminGroup.GET("/status", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": tr.Status()})
+		})
 
-	server.POST("/admin/configure", admin_auth, func(c *gin.Context) {
-		var config interface{}
-		c.BindJSON(&config)
-		// Convert config to JSON string
-		json_config, err := json.Marshal(config)
-		if err != nil {
-			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
-			return
-		}
-		err = tr.Configure(string(json_config))
-		if err != nil {
-			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
-			return
-		}
-		c.JSON(200, gin.H{"message": "configured"})
-	})
+		// Configure route
+		adminGroup.POST("/configure", func(c *gin.Context) {
+			var config interface{}
+			if err := c.ShouldBindJSON(&config); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			jsonConfig, err := json.Marshal(config)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			if err := tr.Configure(string(jsonConfig)); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "configured"})
+		})
 
-	server.GET("/admin/config", admin_auth, func(c *gin.Context) {
-		config := tr.GetConfig()
-		// Convert config to JSON object
-		var json_config interface{}
-		err := json.Unmarshal([]byte(config), &json_config)
-		if err != nil {
-			c.JSON(500, gin.H{"message": "error", "error": err.Error()})
-			return
-		}
-		c.JSON(200, json_config)
-	})
+		// Config route
+		adminGroup.GET("/config", func(c *gin.Context) {
+			config := tr.GetConfig()
+			var jsonConfig interface{}
+			if err := json.Unmarshal([]byte(config), &jsonConfig); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, jsonConfig)
+		})
+	}
 
-	// Run
-	server.Run(":8080")
-
-}
+	
