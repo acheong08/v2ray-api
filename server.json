@@ -12,6 +12,11 @@
             "password": "example",
             "email": "example@example.com"
           }
+        ],
+        "fallbacks": [
+          {
+            "dest": 8080
+          }
         ]
       }
     }

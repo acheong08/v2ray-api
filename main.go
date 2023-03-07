@@ -22,6 +22,10 @@ func authMiddleware(expectedToken string) gin.HandlerFunc {
 
 func main() {
 	tr := trojan.Trojan{}
+	// Start by default
+	if err := tr.Start(); err != nil {
+		panic(err)
+	}
 	router := gin.Default()
 
 	// Ping route

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	ps "github.com/mitchellh/go-ps"
 )
 
 type Trojan struct {
@@ -48,13 +50,14 @@ func (trojan *Trojan) Restart() error {
 
 func (trojan *Trojan) Status() string {
 	// Check if PID is running
-	cmd := exec.Command("ps", "-p", fmt.Sprint(trojan.pid))
-	err := cmd.Run()
+	process, err := ps.FindProcess(trojan.pid)
 	if err != nil {
 		return "stopped"
-	} else {
-		return "running"
 	}
+	if process == nil {
+		return "stopped"
+	}
+	return "running"
 }
 
 func (trojan *Trojan) Configure(config string) error {
