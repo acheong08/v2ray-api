@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 
 	"github.com/acheong08/v2ray-api/trojan"
@@ -106,7 +108,25 @@ func main() {
 			}
 			c.JSON(http.StatusOK, jsonConfig)
 		})
+		// Proxy
+		router.Any("/proxy/*path", reverseProxy)
 	}
 	// Run
 	router.Run()
+}
+
+func reverseProxy(c *gin.Context) {
+	local, err := url.Parse("http://127.0.0.1:10101")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+		return
+	}
+	proxy := httputil.NewSingleHostReverseProxy(local)
+	proxy.Director = func(req *http.Request) {
+		req.Header = c.Request.Header
+		req.URL.Scheme = local.Scheme
+		req.URL.Host = local.Host
+		req.URL.Path = c.Param("path")
+	}
+	proxy.ServeHTTP(c.Writer, c.Request)
 }
