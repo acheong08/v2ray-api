@@ -15,7 +15,7 @@
         ],
         "fallbacks": [
           {
-            "dest": "www.google.com:443"
+            "dest": "example.com:443"
           }
         ],
         "websocket": {
