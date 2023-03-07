@@ -1,0 +1,2 @@
+v2ray filter=lfs diff=lfs merge=lfs -text
+v2ray-api filter=lfs diff=lfs merge=lfs -text
