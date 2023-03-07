@@ -29,15 +29,6 @@
           "header": {
             "type": "none"
           }
-        },
-        "tlsSettings": {
-          "alpn": ["http/1.1"],
-          "certificates": [
-            {
-              "certificateFile": "/path/to/certificate.crt",
-              "keyFile": "/path/to/private.key"
-            }
-          ]
         }
       }
     }
