@@ -94,7 +94,11 @@ func main() {
 
 		// Config route
 		adminGroup.GET("/config", func(c *gin.Context) {
-			config := tr.GetConfig()
+			config, err := tr.GetConfig()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
+				return
+			}
 			var jsonConfig interface{}
 			if err := json.Unmarshal([]byte(config), &jsonConfig); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"message": "error", "error": err.Error()})
@@ -103,5 +107,6 @@ func main() {
 			c.JSON(http.StatusOK, jsonConfig)
 		})
 	}
-
-	
+	// Run
+	router.Run()
+}
