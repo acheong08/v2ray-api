@@ -9,7 +9,7 @@ import (
 )
 
 type Trojan struct {
-	pid int
+	process *os.Process
 }
 
 func (trojan *Trojan) Start() error {
@@ -24,17 +24,29 @@ func (trojan *Trojan) Start() error {
 		return fmt.Errorf("failed to start v2ray: %w", err)
 	}
 	// Get the PID
-	trojan.pid = cmd.Process.Pid
+	trojan.process = cmd.Process
 	return nil
 }
 
 func (trojan *Trojan) Stop() error {
-	cmd := exec.Command("kill", fmt.Sprint(trojan.pid))
-	err := cmd.Start()
-	if err != nil {
-		return fmt.Errorf("failed to stop v2ray: %w", err)
+	if trojan.Status() == "stopped" {
+		return nil
 	}
-	cmd.Wait()
+	// Kill the process
+	err := trojan.process.Kill()
+	if err != nil {
+		return fmt.Errorf("failed to kill v2ray process: %w", err)
+	}
+	// Wait for the process to stop
+	_, err = trojan.process.Wait()
+	if err != nil {
+		return fmt.Errorf("failed to wait for v2ray process: %w", err)
+	}
+	// Release the process
+	err = trojan.process.Release()
+	if err != nil {
+		return fmt.Errorf("failed to release v2ray process: %w", err)
+	}
 	return nil
 }
 
@@ -49,8 +61,8 @@ func (trojan *Trojan) Restart() error {
 }
 
 func (trojan *Trojan) Status() string {
-	// Check if PID is running
-	process, err := ps.FindProcess(trojan.pid)
+	// Check if process is running
+	process, err := ps.FindProcess(trojan.process.Pid)
 	if err != nil {
 		return "stopped"
 	}
