@@ -49,12 +49,12 @@ func (trojan *Trojan) Restart() error {
 func (trojan *Trojan) Status() string {
 	// Check if PID is running
 	cmd := exec.Command("ps", "-p", fmt.Sprint(trojan.pid))
-	err := cmd.Start()
+	err := cmd.Run()
 	if err != nil {
 		return "stopped"
+	} else {
+		return "running"
 	}
-	cmd.Wait()
-	return "running"
 }
 
 func (trojan *Trojan) Configure(config string) error {
