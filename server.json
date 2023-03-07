@@ -12,24 +12,7 @@
             "password": "example",
             "email": "example@example.com"
           }
-        ],
-        "fallbacks": [
-          {
-            "dest": "example.com:443"
-          }
-        ],
-        "websocket": {
-          "enabled": true,
-          "path": "/ws"
-        }
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "tcpSettings": {
-          "header": {
-            "type": "none"
-          }
-        }
+        ]
       }
     }
   ],

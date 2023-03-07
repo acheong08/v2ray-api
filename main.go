@@ -109,7 +109,7 @@ func main() {
 			c.JSON(http.StatusOK, jsonConfig)
 		})
 		// Proxy
-		router.Any("/proxy/*path", reverseProxy)
+		router.Any("/", reverseProxy)
 	}
 	// Run
 	router.Run()
@@ -126,7 +126,7 @@ func reverseProxy(c *gin.Context) {
 		req.Header = c.Request.Header
 		req.URL.Scheme = local.Scheme
 		req.URL.Host = local.Host
-		req.URL.Path = c.Param("path")
+		req.URL.Path = c.Request.URL.Path
 	}
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
