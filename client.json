@@ -25,6 +25,7 @@
       "streamSettings": {
         "security": "tls",
         "tlsSettings": {
+          "alpn": ["http/1.1"],
           "fingerprint": "chrome" 
         }, 
         "network": "tcp",

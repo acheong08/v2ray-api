@@ -1,35 +1,16 @@
 {
-  "log": {
-    "loglevel": "warning"
-  },
   "inbounds": [
     {
       "port": 10101,
       "protocol": "trojan",
       "settings": {
-        "clients": [
-          {
-            "password": "example",
-            "email": "example@example.com"
-          }
-        ],
-        "fallbacks": [
-          {
-            "dest": 10102
-          }
-        ],
-        "websocket": {
-          "enabled": true,
-          "path": "/ws"
-        }
+        "clients": [{ "email": "example@example.com", "password": "example" }],
+        "fallbacks": [{ "dest": 10102 }],
+        "websocket": { "enabled": true, "path": "/ws" }
       },
       "streamSettings": {
         "network": "tcp",
-        "tcpSettings": {
-          "header": {
-            "type": "none"
-          }
-        },
+        "tcpSettings": { "header": { "type": "none" } },
         "tlsSettings": {
           "alpn": ["http/1.1"],
           "certificates": [
@@ -42,9 +23,6 @@
       }
     }
   ],
-  "outbounds": [
-    {
-      "protocol": "freedom"
-    }
-  ]
+  "log": { "loglevel": "warning" },
+  "outbounds": [{ "protocol": "freedom" }]
 }
