@@ -21,6 +21,18 @@
             "password": "example"
           }
         ]
+      },
+      "streamSettings": {
+        "security": "tls",
+        "tlsSettings": {
+          "fingerprint": "chrome" 
+        }, 
+        "network": "tcp",
+        "tcpSettings": {
+          "header": {
+            "type": "none"
+          }
+        }
       }
     }
   ]
